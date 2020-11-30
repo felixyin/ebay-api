@@ -1,0 +1,143 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+
+  <title>eBay API Browser example</title>
+  <meta name="description" content="eBay API Browser">
+  <style>
+    h1 {
+      font-family: sans-serif;
+    }
+    label {
+      display: block;
+      margin: 10px 0;
+    }
+
+    label > span {
+      display: inline-block;
+      min-width: 180px;
+    }
+
+    input[type="text"], input[type="number"] {
+      min-width: 400px;
+      padding: 5px;
+      border-radius: 3px;
+      border: 1px solid #ccc;
+    }
+
+    #response {
+      width: 600px;
+      min-height: 300px;
+    }
+
+    .submit {
+      border: none;
+      background: cornflowerblue;
+      border-radius: 3px;
+      padding: 5px;
+    }
+
+    html {
+      background: #efefef;
+      padding: 0;
+      margin: 0
+    }
+
+    body {
+      padding: 10px;
+      max-width: 800px;
+      margin: 0 auto;
+      background: #fff;
+    }
+  </style>
+</head>
+<body>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@hendt/ebay-api@latest/lib/ebay-api.min.js"></script>
+<link rel="stylesheet"
+      href="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.18.1/build/styles/default.min.css">
+<script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.18.1/build/highlight.min.js"></script>
+<script
+ charset="UTF-8"
+ src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.9/languages/json.min.js"></script>
+
+<h1>eBay API Browser example</h1>
+<p>This API use https://ebay.hendt.workers.dev/ as a Proxy.</p>
+<p>It's only mention for testing, do not abuse it or use in production.</p>
+<form>
+  <label>
+    <span>AppId:</span>
+    <input name="appId" placeholder="appId" type="text">
+  </label>
+  <label>
+    <span>Cert ID</span>
+    <input name="certId" placeholder="certId" type="text">
+  </label>
+  <label>
+    <span>Dev ID</span>
+    <input name="devId" placeholder="DevId" type="text">
+  </label>
+  <label>
+    <span>SiteId</span>
+    <input type="number" value="77" name="siteId">
+  </label>
+  <label>
+    <span>Sandbox</span>
+    <input type="checkbox" name="sandbox">
+  </label>
+
+  <label>
+    <span>Get Item</span>
+    <input value="254188828753" name="itemId" type="text">
+    <button type="button" class="submit" onclick="getItem()">Get Item</button>
+  </label>
+
+  <label>
+    <span>Search</span>
+    <input value="" name="query" type="text">
+    <button type="button" class="submit" onclick="search()">Search</button>
+  </label>
+  <pre><code id="code"></code></pre>
+</form>
+
+
+<script type="text/javascript">
+  const form = document.forms[0]
+  const code = document.getElementById('code')
+  function createApi () {
+    code.innerText = 'loading...'
+    return new eBayApi({
+        appId: form.appId.value,
+        certId: form.certId.value,
+        devId: form.devId.value,
+
+        sandbox: form.sandbox.checked,
+        siteId: form.siteId.value,
+
+        interceptors: {
+          request: (request) => {
+            request.url = 'https://ebay.hendt.workers.dev/' + request.url;
+            return request;
+          }
+        }
+    });
+  }
+
+  function handleError(e) {code.innerText = e.message}
+  function handleResponse(data) {
+    code.innerText = JSON.stringify(data, null, 2);  
+    hljs.highlightBlock(code);
+  }
+
+  function getItem() {
+    createApi().buy.browse.getItem('v1|' + form.itemId.value + '|0').then(handleResponse)
+    .catch(handleError);
+  }
+
+  function search() {
+    createApi().buy.browse.search({q: form.query }).then(handleResponse)
+    .catch(handleError);
+  }
+</script>
+</body>
